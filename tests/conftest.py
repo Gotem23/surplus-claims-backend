@@ -12,7 +12,10 @@ TEST_KEY_ID = "00000000-0000-0000-0000-000000000001"
 
 
 def _get_test_db_url() -> str:
-    # env_loader hasn't run yet; load .env.dev manually
+    # Prefer DATABASE_URL from environment (set by CI); fall back to .env.dev for local runs
+    url = os.environ.get("DATABASE_URL", "")
+    if url:
+        return url
     from dotenv import dotenv_values
     env = dotenv_values(".env.dev")
     return env.get("DATABASE_URL", "")
