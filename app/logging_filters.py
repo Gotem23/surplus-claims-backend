@@ -34,7 +34,6 @@ class RedactApiKeyFilter(logging.Filter):
             if redacted != msg:
                 record.msg = redacted
                 record.args = ()
-        except Exception:
-            # Never block logging if filter fails
+        except Exception:  # nosec B110 – logging filters must never raise
             pass
         return True
