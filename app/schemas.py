@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field
-from typing import Optional
 from datetime import datetime
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class ClaimStatus(str, Enum):
@@ -22,7 +22,7 @@ class SurplusClaimCreate(BaseModel):
     property_address: str = Field(min_length=1, max_length=255)
     surplus_amount: float = Field(default=0, ge=0)
     status: ClaimStatus = Field(default=ClaimStatus.new)
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class SurplusClaimRead(BaseModel):
@@ -33,20 +33,20 @@ class SurplusClaimRead(BaseModel):
     property_address: str
     surplus_amount: float
     status: ClaimStatus
-    notes: Optional[str] = None
+    notes: str | None = None
     created_at: datetime
     updated_at: datetime
 
     # NEW: soft delete marker
-    deleted_at: Optional[datetime] = None
+    deleted_at: datetime | None = None
 
     class Config:
         from_attributes = True
 
 
 class SurplusClaimUpdate(BaseModel):
-    status: Optional[ClaimStatus] = None
-    notes: Optional[str] = None
+    status: ClaimStatus | None = None
+    notes: str | None = None
 
 
 # Audit log read schema (since your API returns audit log lists)
@@ -55,9 +55,16 @@ class AuditLogRead(BaseModel):
     claim_id: str
     action: str
     field: str
-    old_value: Optional[str] = None
-    new_value: Optional[str] = None
+    old_value: str | None = None
+    new_value: str | None = None
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class ClaimsPage(BaseModel):
+    items: list[SurplusClaimRead]
+    total: int
+    limit: int
+    offset: int

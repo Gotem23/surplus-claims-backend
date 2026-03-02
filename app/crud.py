@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
 
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -41,9 +41,9 @@ def list_claims(
     db: Session,
     limit: int = 50,
     offset: int = 0,
-    state: Optional[str] = None,
-    status: Optional[str] = None,
-    county: Optional[str] = None,
+    state: str | None = None,
+    status: str | None = None,
+    county: str | None = None,
     include_deleted: bool = False,
 ):
     q = db.query(models.SurplusClaim)
@@ -60,12 +60,31 @@ def list_claims(
     if county:
         q = q.filter(models.SurplusClaim.county.ilike(f"%{county}%"))
 
-    return (
-        q.order_by(models.SurplusClaim.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
+    return q.order_by(models.SurplusClaim.created_at.desc()).offset(offset).limit(limit).all()
+
+
+def count_claims(
+    db: Session,
+    state: str | None = None,
+    status: str | None = None,
+    county: str | None = None,
+    include_deleted: bool = False,
+) -> int:
+    q = db.query(func.count(models.SurplusClaim.id))
+
+    if not include_deleted:
+        q = q.filter(models.SurplusClaim.deleted_at.is_(None))
+
+    if state:
+        q = q.filter(models.SurplusClaim.state == state.upper())
+
+    if status:
+        q = q.filter(models.SurplusClaim.status == status)
+
+    if county:
+        q = q.filter(models.SurplusClaim.county.ilike(f"%{county}%"))
+
+    return int(q.scalar() or 0)
 
 
 def update_claim(db: Session, claim_id: str, claim_in: schemas.SurplusClaimUpdate):
@@ -88,7 +107,7 @@ def update_claim(db: Session, claim_id: str, claim_in: schemas.SurplusClaimUpdat
     if claim_in.notes is not None:
         claim.notes = claim_in.notes
 
-    claim.updated_at = datetime.utcnow()
+    claim.updated_at = datetime.now()
 
     db.flush()  # stage changes; commit is done by route for atomic audit+update
     return claim
@@ -108,8 +127,7 @@ def soft_delete_claim(db: Session, claim_id: str) -> models.SurplusClaim | None:
     if not claim:
         return None
 
-    claim.deleted_at = datetime.utcnow()
-    claim.updated_at = datetime.utcnow()
+    claim.deleted_at = datetime.now(UTC)
 
     db.flush()  # stage changes; commit is done by route for atomic audit+delete
     return claim
@@ -120,8 +138,8 @@ def create_audit_log(
     claim_id: str,
     action: str,
     field: str,
-    old_value: Optional[str],
-    new_value: Optional[str],
+    old_value: str | None,
+    new_value: str | None,
 ):
     """
     NOTE: intentionally does NOT commit.

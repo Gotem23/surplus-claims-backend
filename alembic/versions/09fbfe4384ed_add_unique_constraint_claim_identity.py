@@ -5,17 +5,15 @@ Revises: f0301cb22f83
 Create Date: 2026-01-04 11:07:01.305867
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 from alembic import op
 
-
-
 # revision identifiers, used by Alembic.
 revision: str = '09fbfe4384ed'
-down_revision: Union[str, Sequence[str], None] = 'f0301cb22f83'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = 'f0301cb22f83'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

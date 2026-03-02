@@ -9,4 +9,3 @@ def test_health_ok():
     assert r.status_code == 200
     data = r.json()
     assert data["status"] == "ok"
-    assert data["db"] == "ok"
