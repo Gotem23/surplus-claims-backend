@@ -25,6 +25,7 @@ from app.middleware.body_size_limit import BodySizeLimitMiddleware  # noqa: E402
 from app.middleware.rate_limit import RateLimitMiddleware  # noqa: E402
 from app.middleware.remove_server_header import RemoveServerHeaderMiddleware  # noqa: E402
 from app.middleware.request_id import RequestIdMiddleware  # noqa: E402
+from app.routers.assist import router as assist_router  # noqa: E402
 from app.routers.claims import router as claims_router  # noqa: E402
 from app.routers.public import router as public_router  # noqa: E402
 
@@ -306,4 +307,5 @@ async def on_shutdown():
 
 app.include_router(public_router)
 app.include_router(claims_router)
+app.include_router(assist_router)
  

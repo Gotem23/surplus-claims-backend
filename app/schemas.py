@@ -68,3 +68,17 @@ class ClaimsPage(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class TransitionOption(BaseModel):
+    status: ClaimStatus
+    label: str
+    description: str
+
+
+class NextStepsResponse(BaseModel):
+    claim_id: str
+    current_status: ClaimStatus
+    can_advance: bool
+    natural_next: ClaimStatus | None  # first in valid transitions = advance target
+    valid_transitions: list[TransitionOption]
